@@ -1,9 +1,6 @@
 package com.example.casemonitoring;
 
-import static java.util.Arrays.asList;
-
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,28 +12,29 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainPage extends AppCompatActivity {
 
-
-    private static final String TAG = "MainActivity";
-
     private static List<String> caseInfoBase = new ArrayList<>();
     private static final int MAX_PAGES = 4;
-    private static final String URL_FORMAT = "https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&category_730_Type%5B%5D=tag_CSGO_Type_WeaponCase&appid=730&q=case#p%d_price_asc";
-    private static final List<String> URL = asList("https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&category_730_Type%5B%5D=tag_CSGO_Type_WeaponCase&appid=730&q=case#p1_price_asc",
-            "https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&category_730_Type%5B%5D=tag_CSGO_Type_WeaponCase&appid=730&q=case#p2_price_asc",
-            "https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&category_730_Type%5B%5D=tag_CSGO_Type_WeaponCase&appid=730&q=case#p3_price_asc",
-            "https://steamcommunity.com/market/search?category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&category_730_Type%5B%5D=tag_CSGO_Type_WeaponCase&appid=730&q=case#p4_price_asc");
-
     TextView Logo;
 
     Button refresh;
@@ -46,6 +44,7 @@ public class MainPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
+        getSupportActionBar().hide();
 
         Logo = (TextView) findViewById(R.id.Logo);
 
@@ -53,34 +52,67 @@ public class MainPage extends AppCompatActivity {
 
         refresh = (Button) findViewById(R.id.refreshCases);
 
-        String url = String.format(URL_FORMAT, 1);
-
-        refresh.setOnClickListener(view -> new SteamCasePriceParser().execute());
+        refresh.setOnClickListener(view -> {
+            makeRequest(1);
+        });
     }
 
-    private class SteamCasePriceParser extends AsyncTask<Void, Void, List<String[]>> {
-        final List<String[]> data = new ArrayList<>();
-        @Override
-        protected List<String[]> doInBackground(Void... voids) {
-            try {
-                for (int page = 1; page <= MAX_PAGES; page++) {
-                    String url = String.format(URL_FORMAT, page);
-                    Document doc = (Document) Jsoup.connect(url).get();
-                    Elements cases = doc.select(".market_listing_row_link");
-                    for (Element caseItem : cases) {
-                        String caseName = caseItem.select(".market_listing_item_name").text();
-                        String casePrice = caseItem.select("span.market_table_value.normal_price > span.normal_price").text();
-                        String caseCount = caseItem.select(".market_listing_num_listings_qty").text();
-                        addData(caseName, casePrice, caseCount);
+    private void makeRequest(int page) {
+        String url = "https://steamcommunity.com/market/listings/730/Snakebite%20Case";
+        RequestQueue queue = Volley.newRequestQueue(this);
+        Log.d("URL", url);
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        processPrices(response);
+                        if (page < MAX_PAGES) {
+                            makeRequest(page + 1);
+                        }
                     }
-                }
-                } catch(IOException e){
-                    Log.e(TAG, "Error while parsing data from Steam website", e);
-                }
-                return data;
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                handleError(error);
             }
+        }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = super.getHeaders();
+                if (headers == null || headers.equals(Collections.emptyMap())) {
+                    headers = new HashMap<>();
+                }
+                headers.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
+                return headers;
+            }
+        };
+        stringRequest.setShouldCache(false);
+        queue.add(stringRequest);
+    }
 
-        private void addData(String name, String price, String count) {
+    private void processPrices(String response) {
+        final List<String[]> data = new ArrayList<>();
+
+        Document doc = (Document) Jsoup.parse(response);
+        Elements cases = doc.select(".market_listing_row");
+        for (Element caseItem : cases) {
+            String caseName = caseItem.select(".market_listing_item_name").text();
+            Log.d("CaseName", caseName);
+            String casePrice = caseItem.select("span.market_table_value.normal_price > span.normal_price").text();
+            Log.d("CasePrice", casePrice);
+            String caseCount = caseItem.select(".market_listing_num_listings_qty").text();
+            Log.d("CaseCount", caseCount);
+            addData(caseName, casePrice, caseCount, data);
+        }
+
+    }
+
+    private void handleError(VolleyError error) {
+        Log.e("ERROR", error.getMessage());
+    }
+
+        private void addData(String name, String price, String count, List<String[]> data) {
+
             StringBuilder priceChange = new StringBuilder(price);
             int check = 0;
             char c;
@@ -94,15 +126,15 @@ public class MainPage extends AppCompatActivity {
             priceChange.append("$");
             String[] row = {name,  count, priceChange.toString()};
             data.add(row);
+            if(data.size() >= 10) printInfo(data);
         }
 
-        @Override
-        protected void onPostExecute(List<String[]> data) {
+        private void printInfo(List<String[]> data) {
             for (String[] row : data) {
-                String out =  row[0] + " " + row[1] + " " + row[2];
-                caseInfoBase.add(out);
+                String out =  row[0];
+                if(!caseInfoBase.contains(out)) caseInfoBase.add(out);
             }
-            if(caseInfoBase.size() > 30) {
+            if (caseInfoBase.size() >= 10) {
                 final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainPage.this,
                         android.R.layout.simple_list_item_1, caseInfoBase) {
                     @Override
@@ -119,7 +151,6 @@ public class MainPage extends AppCompatActivity {
 
                 caseList.setAdapter(adapter);
             }
-
         }
-    }
+
 }
