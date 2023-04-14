@@ -1,6 +1,7 @@
 package com.example.casemonitoring;
 
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,29 +13,19 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MainPage extends AppCompatActivity {
 
     private static List<String> caseInfoBase = new ArrayList<>();
-    private static final int MAX_PAGES = 4;
+    private static final String url = "https://csgostash.com/containers/skin-cases";
     TextView Logo;
 
     Button refresh;
@@ -53,86 +44,61 @@ public class MainPage extends AppCompatActivity {
         refresh = (Button) findViewById(R.id.refreshCases);
 
         refresh.setOnClickListener(view -> {
-            makeRequest(1);
+            new SteamCasePriceParser().execute(url);
         });
     }
 
-    private void makeRequest(int page) {
-        String url = "https://steamcommunity.com/market/listings/730/Snakebite%20Case";
-        RequestQueue queue = Volley.newRequestQueue(this);
-        Log.d("URL", url);
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        processPrices(response);
-                        if (page < MAX_PAGES) {
-                            makeRequest(page + 1);
-                        }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                handleError(error);
-            }
-        }){
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = super.getHeaders();
-                if (headers == null || headers.equals(Collections.emptyMap())) {
-                    headers = new HashMap<>();
-                }
-                headers.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3");
-                return headers;
-            }
-        };
-        stringRequest.setShouldCache(false);
-        queue.add(stringRequest);
-    }
-
-    private void processPrices(String response) {
+    private class SteamCasePriceParser extends AsyncTask<String, Void, List<String[]>> {
         final List<String[]> data = new ArrayList<>();
 
-        Document doc = (Document) Jsoup.parse(response);
-        Elements cases = doc.select(".market_listing_row");
-        for (Element caseItem : cases) {
-            String caseName = caseItem.select(".market_listing_item_name").text();
-            Log.d("CaseName", caseName);
-            String casePrice = caseItem.select("span.market_table_value.normal_price > span.normal_price").text();
-            Log.d("CasePrice", casePrice);
-            String caseCount = caseItem.select(".market_listing_num_listings_qty").text();
-            Log.d("CaseCount", caseCount);
-            addData(caseName, casePrice, caseCount, data);
+        @Override
+        protected List<String[]> doInBackground(String... urls) {
+            try {
+                Document doc = (Document) Jsoup.connect(urls[0]).userAgent("Chrome/4.0.249.0 Safari/532.5").get();
+                Element table = doc.select("body > div.container.main-content > div:nth-child(7)").first();
+                Elements rows = table.getElementsByClass("col-lg-4 col-md-6 col-widen text-center");
+                for (Element row : rows) {
+                    String caseName = row.select("div > a > h4").text();
+                    String casePrice = row.select("div > a > div > p").text();
+                    String caseCount = row.getElementsByClass("btn btn-default market-button-item").text();
+                    addData(caseName, casePrice, caseCount);
+                }
+            } catch (IOException e) {
+                Log.e("Error", "Error while parsing data from website", e);
+            }
+            return data;
         }
 
-    }
-
-    private void handleError(VolleyError error) {
-        Log.e("ERROR", error.getMessage());
-    }
-
-        private void addData(String name, String price, String count, List<String[]> data) {
-
+        private void addData(String name, String price, String count) {
             StringBuilder priceChange = new StringBuilder(price);
+            StringBuilder countChange = new StringBuilder(count);
             int check = 0;
             char c;
-            while(true){
+            while (true) {
                 c = priceChange.charAt(check);
-                if(!(Character.isDigit(c)) && c != '.'){
+                if (!(Character.isDigit(c)) && c != ',') {
                     priceChange.deleteCharAt(check);
                 } else check++;
-                if(check == priceChange.length()) break;
+                if (check == priceChange.length()) break;
             }
-            priceChange.append("$");
-            String[] row = {name,  count, priceChange.toString()};
+            priceChange.append(" руб.");
+            check = 0;
+            while(true){
+                if (check == countChange.length()) break;
+                c = countChange.charAt(check);
+                if (!(Character.isDigit(c))) {
+                    countChange.deleteCharAt(check);
+                } else check++;
+            }
+            String[] row = {name, countChange.toString(), priceChange.toString()};
             data.add(row);
-            if(data.size() >= 10) printInfo(data);
         }
 
-        private void printInfo(List<String[]> data) {
+        @Override
+        protected void onPostExecute(List<String[]> data) {
             for (String[] row : data) {
-                String out =  row[0];
-                if(!caseInfoBase.contains(out)) caseInfoBase.add(out);
+                String out = row[0] + " " + row[1] + " " + row[2];
+                caseInfoBase.add(out);
             }
             if (caseInfoBase.size() >= 10) {
                 final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainPage.this,
@@ -152,5 +118,5 @@ public class MainPage extends AppCompatActivity {
                 caseList.setAdapter(adapter);
             }
         }
-
+    }
 }
