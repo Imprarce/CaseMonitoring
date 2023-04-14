@@ -4,5 +4,8 @@
     <string name="Enter">Войти</string>
     <string name="login">Login</string>
     <string name="Situation">Ситуация на торговой площадке</string>
-    <string name="refresh">Button</string>
+    <string name="refresh">Обновить цены</string>
+    <string name="Name">Название</string>
+    <string name="Count">Количество</string>
+    <string name="Price">Цена</string>
 </resources>
