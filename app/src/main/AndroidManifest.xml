@@ -14,14 +14,14 @@
         android:theme="@style/Theme.CaseMonitoring"
         tools:targetApi="31">
         <activity
-            android:name=".Register"
+            android:name=".first_page.Register"
             android:exported="false" />
         <activity
-            android:name=".MainPage"
+            android:name=".second_page.MainPage"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Authorization"
+            android:name=".first_page.Authorization"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>

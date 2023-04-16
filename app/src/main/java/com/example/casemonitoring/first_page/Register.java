@@ -1,4 +1,4 @@
-package com.example.casemonitoring;
+package com.example.casemonitoring.first_page;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -10,6 +10,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.casemonitoring.R;
 
 import java.io.IOException;
 import java.util.regex.Matcher;
@@ -66,6 +68,9 @@ public class Register extends AppCompatActivity {
             } else login_check = false;
 
             if(login_check == true && password_check == true){
+
+                String new_User = "INSERT INTO Users (login, password) VALUES" + "('" + login.getText().toString() + "', '" + password.getText().toString() + "')";
+                mDb.execSQL(new_User);
 
 
                 Toast.makeText(getApplicationContext(), "Вы успешно зарегистировались", Toast.LENGTH_LONG).show();

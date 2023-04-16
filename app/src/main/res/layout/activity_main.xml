@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/gradient_for_login_and_password"
-    tools:context=".Authorization">
+    tools:context=".first_page.Authorization">
 
     <EditText
         android:id="@+id/Login"

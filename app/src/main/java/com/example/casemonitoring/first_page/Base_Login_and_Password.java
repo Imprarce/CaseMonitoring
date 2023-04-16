@@ -1,4 +1,4 @@
-package com.example.casemonitoring;
+package com.example.casemonitoring.first_page;
 
 import android.content.Context;
 import android.database.SQLException;

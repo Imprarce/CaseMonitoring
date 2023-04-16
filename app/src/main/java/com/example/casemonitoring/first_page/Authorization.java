@@ -1,4 +1,4 @@
-package com.example.casemonitoring;
+package com.example.casemonitoring.first_page;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -10,6 +10,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.casemonitoring.second_page.MainPage;
+import com.example.casemonitoring.R;
 
 import java.io.IOException;
 
