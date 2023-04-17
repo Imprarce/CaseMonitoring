@@ -4,16 +4,19 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -28,7 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainPage extends AppCompatActivity {
+public class MainPage extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
     private static List<String> caseInfoBase = new ArrayList<>();
     private static final String url = "https://csgostash.com/containers/skin-cases";
@@ -43,6 +46,8 @@ public class MainPage extends AppCompatActivity {
     private SQLiteDatabase mDbCase;
     TextView Logo;
 
+    Switch refresh10sec;
+    Switch refresh30sec;
     Button refresh;
     ListView caseList;
 
@@ -66,6 +71,16 @@ public class MainPage extends AppCompatActivity {
             throw mSQLException;
         }
 
+        refresh10sec = (Switch) findViewById(R.id.refresh10sec);
+        refresh30sec = (Switch) findViewById(R.id.refresh30sec);
+
+        if(refresh10sec != null){
+            refresh10sec.setOnCheckedChangeListener(this);
+        }
+
+        if(refresh30sec != null){
+            refresh30sec.setOnCheckedChangeListener(this);
+        }
 
         Logo = (TextView) findViewById(R.id.Logo);
 
@@ -80,6 +95,35 @@ public class MainPage extends AppCompatActivity {
         });
     }
 
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if(refresh10sec.isChecked() && refresh30sec.isChecked())
+        {
+            refresh10sec.setChecked(false);
+            refresh30sec.setChecked(false);
+            Toast.makeText(this, "Выберите что-то одно", Toast.LENGTH_SHORT).show();
+        }
+        if(refresh10sec.isChecked()){
+            final Handler hf = new Handler();
+            hf.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    new SteamCasePriceParser().execute(url);
+                    if(refresh10sec.isChecked()) hf.postDelayed(this, 10000);
+                }
+            } ,10000);
+        }
+        if(refresh30sec.isChecked()){
+            final Handler hf = new Handler();
+            hf.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    new SteamCasePriceParser().execute(url);
+                    if(refresh30sec.isChecked()) hf.postDelayed(this, 30000);
+                }
+            } ,30000);
+        }
+    }
+
 
     private class SteamCasePriceParser extends AsyncTask<String, Void, List<String[]>> {
         final List<String[]> data = new ArrayList<>();
@@ -91,6 +135,7 @@ public class MainPage extends AppCompatActivity {
                 Element table = doc.select("body > div.container.main-content > div:nth-child(7)").first();
                 Elements rows = table.getElementsByClass("col-lg-4 col-md-6 col-widen text-center");
                 for (Element row : rows) {
+                    String imageURL = row.getElementsByClass("img-responsive center-block").attr("src");
                     String caseName = row.select("div > a > h4").text();
                     String casePrice = row.select("div > a > div > p").text();
                     String caseCount = row.getElementsByClass("btn btn-default market-button-item").text();
@@ -169,14 +214,14 @@ public class MainPage extends AppCompatActivity {
         cursor.moveToFirst();
         if(caseInfoBase.size() >= 40) caseInfoBase.clear();
 
-        // Удаление элементов, если count = 0 || убрать?
+        // Удаление элементов, если count = 0
         while (!cursor.isAfterLast()) {
             if(cursor.getString(2).equals("0")) mDbCase.delete(DATABASE_TABLE, KEY_COUNT + "=" + cursor.getString(2), null);
             cursor.moveToNext();
         }
         cursor.moveToFirst();
 
-        //Удаление элементов с одинаковыми именами || Доделать или убрать?
+        //Удаление элементов с одинаковыми именами
 
         while (!cursor.isAfterLast()) {
             if(cursor.getString(1).contains(mDbCase.toString())) mDbCase.delete(DATABASE_TABLE, KEY_NAME + "=" + cursor.getString(1), null);
@@ -186,25 +231,33 @@ public class MainPage extends AppCompatActivity {
 
         // Добавление элементов в список для их вывода
         while (!cursor.isAfterLast()) {
-            if(!cursor.getString(2).equals("0")) caseInfoBase.add(cursor.getString(1) + " " + cursor.getString(2) + " " + cursor.getString(3));
+            if(!cursor.getString(2).equals("0")) caseInfoBase.add(cursor.getString(1) + ", " + cursor.getString(2) + ", " + cursor.getString(3));
             cursor.moveToNext();
         }
 
         cursor.close();
             final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainPage.this,
-                    android.R.layout.simple_list_item_1, caseInfoBase) {
+                    R.layout.list_item_3column, R.id.Name, caseInfoBase) {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
                     View view = super.getView(position, convertView, parent);
 
-                    TextView textView = (TextView) view.findViewById(android.R.id.text1);
+                    String[] itemParts = getItem(position).split(", ");
 
-                    textView.setTextColor(Color.WHITE);
+                    TextView nameView = view.findViewById(R.id.Name);
+                    TextView countView = view.findViewById(R.id.Count);
+                    TextView priceView = view.findViewById(R.id.Price);
+
+                    nameView.setText(itemParts[0]);
+                    countView.setText(itemParts[1]);
+                    priceView.setText(itemParts[2]);
+
+
 
                     return view;
                 }
             };
-            System.out.println("Все обновилось");
+            Toast.makeText(this, "Данные обновились", Toast.LENGTH_SHORT).show();
             caseList.setAdapter(adapter);
         }
 

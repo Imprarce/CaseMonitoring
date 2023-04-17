@@ -10,7 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:background="@drawable/my_gradient_drawable"
         android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent">
@@ -33,14 +33,46 @@
             android:id="@+id/refreshCases"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:backgroundTint="@color/dark_slate_gray"
-            android:textColor="@color/white"
             android:text="@string/refresh"
+            android:textColor="@color/white"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.05"
+            app:layout_constraintHorizontal_bias="0.065"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/Logo" />
+
+        <Switch
+            android:id="@+id/refresh30sec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="21dp"
+            android:layout_marginEnd="135dp"
+            android:minHeight="48dp"
+            android:text="Раз в 30 секунд"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/refreshCases"
             app:layout_constraintTop_toBottomOf="@+id/Logo"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintVertical_bias="0.36" />
+
+        <Switch
+            android:id="@+id/refresh10sec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="69dp"
+            android:minHeight="48dp"
+            android:text="Раз в 10 секунд"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@+id/refresh30sec"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/refreshCases"
+            app:layout_constraintTop_toBottomOf="@+id/Logo" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -60,43 +92,44 @@
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
 
         <TextView
-            android:id="@+id/Name"
+            android:id="@+id/Name_case"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
             android:text="@string/Name"
             android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_weight="1"/>
 
         <TextView
-            android:id="@+id/Count"
+            android:id="@+id/Count_case"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/Count"
             android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/Price"
-            app:layout_constraintStart_toEndOf="@+id/Name"
+            app:layout_constraintEnd_toStartOf="@+id/Price_case"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toEndOf="@+id/Name_case"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/Price"
+            android:id="@+id/Price_case"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-
+            android:layout_marginEnd="60dp"
             android:text="@string/Price"
             android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/caseListConstraint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
