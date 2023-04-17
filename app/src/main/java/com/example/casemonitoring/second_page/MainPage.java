@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -21,12 +24,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.casemonitoring.R;
+import com.squareup.picasso.Picasso;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,7 +144,7 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                     String caseName = row.select("div > a > h4").text();
                     String casePrice = row.select("div > a > div > p").text();
                     String caseCount = row.getElementsByClass("btn btn-default market-button-item").text();
-                    addData(caseName, casePrice, caseCount);
+                    addData(caseName, casePrice, caseCount, imageURL);
                 }
             } catch (IOException e) {
                 Log.e("Error", "Error while parsing data from website", e);
@@ -147,7 +152,7 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
             return data;
         }
 
-        private void addData(String name, String price, String count) {
+        private void addData(String name, String price, String count, String imageURL) {
             StringBuilder priceChange = new StringBuilder(price);
             StringBuilder countChange = new StringBuilder(count);
             int check = 0;
@@ -168,7 +173,7 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                     countChange.deleteCharAt(check);
                 } else check++;
             }
-            String[] row = {name, countChange.toString(), priceChange.toString()};
+            String[] row = {name, countChange.toString(), priceChange.toString(), imageURL};
             data.add(row);
         }
 
@@ -188,6 +193,7 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                             cv.put("NAME", Abr[0]);
                             cv.put("COUNT", Integer.parseInt(Abr[1]));
                             cv.put("PRICE", Abr[2]);
+                            cv.put("IMAGE_URL", Abr[3]);
                             if(!Abr[2].equals(cursor.getString(3))) {
                                 mDbCase.update(DATABASE_TABLE, cv, KEY_ID + "=" + cursor.getString(0), null);
                                 System.out.println("Прозошли измнения " + cv);
@@ -197,7 +203,7 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                     }
 
                     if (cursor.isAfterLast()) {
-                        String new_Case = "INSERT INTO CaseInfo (name, count, price) VALUES" + "('" + Abr[0] + "', '" + Abr[1] + "', '" + Abr[2] + "')";
+                        String new_Case = "INSERT INTO CaseInfo (name, count, price, image_url) VALUES" + "('" + Abr[0] + "', '" + Abr[1] + "', '" + Abr[2] + "', '" + Abr[3] + "')";
                         mDbCase.execSQL(new_Case);
                         cursor.moveToFirst();
                     } else cursor.moveToFirst();
@@ -231,13 +237,13 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
 
         // Добавление элементов в список для их вывода
         while (!cursor.isAfterLast()) {
-            if(!cursor.getString(2).equals("0")) caseInfoBase.add(cursor.getString(1) + ", " + cursor.getString(2) + ", " + cursor.getString(3));
+            if(!cursor.getString(2).equals("0")) caseInfoBase.add(cursor.getString(1) + ", " + cursor.getString(2) + ", " + cursor.getString(3) + ", " + cursor.getString(4));
             cursor.moveToNext();
         }
 
         cursor.close();
             final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainPage.this,
-                    R.layout.list_item_3column, R.id.Name, caseInfoBase) {
+                    R.layout.list_item_4column, R.id.Name, caseInfoBase) {
                 @Override
                 public View getView(int position, View convertView, ViewGroup parent) {
                     View view = super.getView(position, convertView, parent);
@@ -247,10 +253,13 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                     TextView nameView = view.findViewById(R.id.Name);
                     TextView countView = view.findViewById(R.id.Count);
                     TextView priceView = view.findViewById(R.id.Price);
+                    ImageView imageView = view.findViewById(R.id.Image);
 
+                    File f = new File(String.valueOf(Uri.parse(itemParts[3])));
                     nameView.setText(itemParts[0]);
                     countView.setText(itemParts[1]);
                     priceView.setText(itemParts[2]);
+                    Picasso.get().load(itemParts[3]).into(imageView);
 
 
 
@@ -260,5 +269,21 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
             Toast.makeText(this, "Данные обновились", Toast.LENGTH_SHORT).show();
             caseList.setAdapter(adapter);
         }
+
+    public class ImageItem {
+        private Bitmap image;
+
+        public ImageItem(Bitmap image) {
+            this.image = image;
+        }
+
+        public Bitmap getImage() {
+            return image;
+        }
+
+        public void setImage(Bitmap image) {
+            this.image = image;
+        }
+    }
 
 }

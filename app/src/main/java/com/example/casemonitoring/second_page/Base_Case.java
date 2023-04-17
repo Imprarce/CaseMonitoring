@@ -15,7 +15,7 @@ import java.io.OutputStream;
 public class Base_Case extends SQLiteOpenHelper {
     private static String DB_NAME = "CaseBase.db";
     private static String DB_PATH = "";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
 
     private SQLiteDatabase mDataBase;
     private final Context mContext;
