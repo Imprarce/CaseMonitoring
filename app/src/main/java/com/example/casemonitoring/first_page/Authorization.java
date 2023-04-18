@@ -11,8 +11,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.casemonitoring.second_page.MainPage;
 import com.example.casemonitoring.R;
+import com.example.casemonitoring.second_page.MainPage;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.IOException;
 
@@ -24,6 +25,8 @@ public class Authorization extends AppCompatActivity {
     Button register;
     EditText login;
     EditText password;
+
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     private Base_Login_and_Password mDBHelper;
     private SQLiteDatabase mDb;
@@ -59,20 +62,14 @@ public class Authorization extends AppCompatActivity {
 
         enter.setOnClickListener(view -> {
 
-                if(isLogin_check(login.getText().toString())){
-                    login_check = true;
-                } else login_check = false;
-
-                if(isPassword_check(password.getText().toString())){
-                    password_check = true;
-                } else password_check = false;
-
-                if(login_check == true && password_check == true) {
-                    startActivity(new Intent(Authorization.this, MainPage.class));
-                    finish();
-                } else{
-                    Toast.makeText(getApplicationContext(), "Логин или пароль введены неверно", Toast.LENGTH_LONG).show();
-                }
+                mAuth.signInWithEmailAndPassword(login.getText().toString() + "@example.com", password.getText().toString()).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        startActivity(new Intent(Authorization.this, MainPage.class));
+                        finish();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Логин или пароль введены неверно", Toast.LENGTH_LONG).show();
+                    }
+                });
 
         });
 

@@ -12,8 +12,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.casemonitoring.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,15 +32,19 @@ public class Register extends AppCompatActivity {
     private static boolean login_check = false;
     private static boolean password_check = false;
 
+
     private Base_Login_and_Password mDBHelper;
     private SQLiteDatabase mDb;
+
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+    private DatabaseReference mUsersRef = mDatabase.getReference("my_data");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getSupportActionBar().hide();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
 
         register = (Button) findViewById(R.id.Register);
 
@@ -72,8 +81,27 @@ public class Register extends AppCompatActivity {
                 String new_User = "INSERT INTO Users (login, password) VALUES" + "('" + login.getText().toString() + "', '" + password.getText().toString() + "')";
                 mDb.execSQL(new_User);
 
+                mAuth.createUserWithEmailAndPassword(login.getText().toString() + "@example.com", password.getText().toString())
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
 
-                Toast.makeText(getApplicationContext(), "Вы успешно зарегистировались", Toast.LENGTH_LONG).show();
+                                String userId = mAuth.getCurrentUser().getUid();
+
+
+                                Map<String, Object> user = new HashMap<>();
+                                user.put("login", login.getText().toString());
+                                user.put("password", password.getText().toString());
+
+
+                                mUsersRef.child(userId).setValue(user);
+                                Toast.makeText(getApplicationContext(), "Вы успешно зарегистировались", Toast.LENGTH_LONG).show();
+
+                            } else {
+                               Toast.makeText(getApplicationContext(), "Failed", Toast.LENGTH_SHORT);
+                            }
+                        });
+
+
                 startActivity(new Intent(Register.this, Authorization.class));
 
 
@@ -85,6 +113,8 @@ public class Register extends AppCompatActivity {
         });
 
     }
+
+
 
     protected boolean isLogin_check(String login){
         String login_User = login;

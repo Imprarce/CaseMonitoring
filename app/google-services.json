@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "485140461413",
+    "project_id": "case-monitoring-42387",
+    "storage_bucket": "case-monitoring-42387.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485140461413:android:83329584cb9a0826b1538c",
+        "android_client_info": {
+          "package_name": "com.example.casemonitoring"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "485140461413-75n1slsvebga4jf1nao82rnevir48d5k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6qcyUbuIbMrWKGmJvzxkS9UaiKQEH1KA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "485140461413-75n1slsvebga4jf1nao82rnevir48d5k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
