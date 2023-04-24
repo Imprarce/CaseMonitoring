@@ -1,7 +1,6 @@
 package com.example.casemonitoring.first_page;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -76,37 +75,5 @@ public class Authorization extends AppCompatActivity {
         register.setOnClickListener(v -> {
             startActivity(new Intent(Authorization.this, Register.class));
         });
-    }
-
-    protected boolean isLogin_check(String login){
-        String login_User = login;
-
-        Cursor cursor = mDb.rawQuery("SELECT * FROM Users", null);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            if(login_User.equals(cursor.getString(1)))
-            {
-                return true;
-            }
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return false;
-    }
-
-    protected boolean isPassword_check(String password){
-        String password_User = password;
-
-        Cursor cursor = mDb.rawQuery("SELECT * FROM Users", null);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            if(password_User.equals(cursor.getString(2)))
-            {
-                return true;
-            }
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return false;
     }
 }

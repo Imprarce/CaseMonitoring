@@ -11,4 +11,10 @@
     <string name="Register">Зарегистрироваться</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="tree_and_ten_sec">Раз в 30 секунд</string>
+    <string name="_10">Раз в 10 секунд</string>
+    <string name="open">Открыть меню</string>
+    <string name="close">Закрыть меню</string>
+    <string name="add_Case">Добавить предмет</string>
+    <string name="delete_case">Удалить предмет</string>
 </resources>

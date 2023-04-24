@@ -1,10 +1,10 @@
 package com.example.casemonitoring.second_page;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,8 +22,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.casemonitoring.R;
+import com.example.casemonitoring.first_page.Authorization;
 import com.squareup.picasso.Picasso;
 
 import org.jsoup.Jsoup;
@@ -36,7 +39,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainPage extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
+public class MainPage extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, FavoriteFragmentListener {
 
     private static List<String> caseInfoBase = new ArrayList<>();
     private static final String url = "https://csgostash.com/containers/skin-cases";
@@ -55,6 +58,11 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
     Switch refresh30sec;
     Button refresh;
     ListView caseList;
+
+    ImageView favorite;
+    ImageView exit;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +106,38 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
         refresh.setOnClickListener(view -> {
             new SteamCasePriceParser().execute(url);
         });
+
+        favorite = findViewById(R.id.favorite);
+        exit = findViewById(R.id.exit);
+
+        exit.setOnClickListener(v -> {
+            startActivity(new Intent(MainPage.this, Authorization.class));
+            finish();
+        });
+
+        favorite.setOnClickListener(v -> {
+
+            Favorite_Fragment fragment = new Favorite_Fragment();
+
+            FragmentManager fragmentManager = getSupportFragmentManager();
+
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+            transaction.replace(R.id.main_constraint, fragment);
+
+            transaction.addToBackStack(null);
+
+            fragment.setListener(this);
+
+            transaction.commit();
+
+            refresh10sec.setClickable(false);
+            refresh30sec.setClickable(false);
+            refresh.setClickable(false);
+            caseList.setClickable(false);
+            favorite.setClickable(false);
+            exit.setClickable(false);
+        });
     }
 
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -127,6 +167,17 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                 }
             } ,30000);
         }
+    }
+
+    @Override
+    public void onExitClicked() {
+        refresh10sec.setClickable(true);
+        refresh30sec.setClickable(true);
+        refresh.setClickable(true);
+        caseList.setClickable(true);
+        favorite.setClickable(true);
+        exit.setClickable(true);
+        onBackPressed();
     }
 
 
@@ -196,7 +247,6 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                             cv.put("IMAGE_URL", Abr[3]);
                             if(!Abr[2].equals(cursor.getString(3))) {
                                 mDbCase.update(DATABASE_TABLE, cv, KEY_ID + "=" + cursor.getString(0), null);
-                                System.out.println("Прозошли измнения " + cv);
                             }
                             break;
                         }
@@ -269,21 +319,4 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
             Toast.makeText(this, "Данные обновились", Toast.LENGTH_SHORT).show();
             caseList.setAdapter(adapter);
         }
-
-    public class ImageItem {
-        private Bitmap image;
-
-        public ImageItem(Bitmap image) {
-            this.image = image;
-        }
-
-        public Bitmap getImage() {
-            return image;
-        }
-
-        public void setImage(Bitmap image) {
-            this.image = image;
-        }
-    }
-
 }

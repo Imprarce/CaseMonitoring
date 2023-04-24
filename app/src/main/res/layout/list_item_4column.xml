@@ -33,7 +33,7 @@
         android:id="@+id/Count"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="0.32"
+        android:layout_weight="0.35"
         android:textColor="@color/white"
         android:textSize="17sp"
         android:text="Count" />
