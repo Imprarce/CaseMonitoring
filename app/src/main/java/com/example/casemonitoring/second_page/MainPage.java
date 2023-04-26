@@ -52,15 +52,15 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
     public static final String KEY_ID = "_id";
 
     private SQLiteDatabase mDbCase;
-    TextView Logo;
+    private TextView Logo;
 
-    Switch refresh10sec;
-    Switch refresh30sec;
-    Button refresh;
-    ListView caseList;
+    private Switch refresh10sec;
+    private Switch refresh30sec;
+    private Button refresh;
+    private ListView caseList;
 
-    ImageView favorite;
-    ImageView exit;
+    private ImageView favorite;
+    private ImageView exit;
 
 
 
@@ -310,8 +310,6 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
                     countView.setText(itemParts[1]);
                     priceView.setText(itemParts[2]);
                     Picasso.get().load(itemParts[3]).into(imageView);
-
-
 
                     return view;
                 }
