@@ -191,7 +191,7 @@ public class Favorite_Fragment extends Fragment {
                     } else list_for_adapter.add(caseName);
                 }
                 if(listItems.size() == 0) listItems = list_for_adapter;
-                addFromDataBase();
+                if(listItems.size() != 0) addFromDataBase();
             }
             @Override
             public void onCancelled(@androidx.annotation.NonNull DatabaseError error) {

@@ -37,6 +37,8 @@ import org.jsoup.select.Elements;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MainPage extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, FavoriteFragmentListener {
@@ -45,6 +47,9 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
     private static final String url = "https://csgostash.com/containers/skin-cases";
 
     private Base_Case mDBHelperCase;
+
+    private boolean up = false;
+    private boolean down = false;
 
     private static final String DATABASE_TABLE ="CaseInfo";
     public static final String KEY_COUNT = "Count";
@@ -61,6 +66,18 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
 
     private ImageView favorite;
     private ImageView exit;
+
+    private ImageView upArrowPrice;
+    private ImageView upArrowCount;
+    private ImageView upArrowName;
+
+    private ImageView downArrowPrice;
+    private ImageView downArrowCount;
+    private ImageView downArrowName;
+
+    private TextView price;
+    private TextView name;
+    private TextView count;
 
 
 
@@ -94,6 +111,32 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
         if(refresh30sec != null){
             refresh30sec.setOnCheckedChangeListener(this);
         }
+
+        price = (TextView) findViewById(R.id.Price_case);
+
+        price.setOnClickListener(v -> {
+            filterByPrice();
+        });
+
+        count = (TextView) findViewById(R.id.Count_case);
+
+        count.setOnClickListener(v -> {
+            filterByCount();
+        });
+
+        name = (TextView) findViewById(R.id.Name_case);
+
+        name.setOnClickListener(v -> {
+            filterByName();
+        });
+
+        upArrowPrice = (ImageView) findViewById(R.id.upForPrice);
+        upArrowCount = (ImageView) findViewById(R.id.upForСount);
+        upArrowName = (ImageView) findViewById(R.id.upForName);
+
+        downArrowPrice = (ImageView) findViewById(R.id.downForPrice);
+        downArrowCount = (ImageView) findViewById(R.id.downForCount);
+        downArrowName = (ImageView) findViewById(R.id.downForName);
 
         Logo = (TextView) findViewById(R.id.Logo);
 
@@ -292,6 +335,10 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
         }
 
         cursor.close();
+        adapterList();
+        }
+
+        protected void adapterList(){
             final ArrayAdapter<String> adapter = new ArrayAdapter<String>(MainPage.this,
                     R.layout.list_item_4column, R.id.Name, caseInfoBase) {
                 @Override
@@ -316,5 +363,49 @@ public class MainPage extends AppCompatActivity implements CompoundButton.OnChec
             };
             Toast.makeText(this, "Данные обновились", Toast.LENGTH_SHORT).show();
             caseList.setAdapter(adapter);
+        }
+
+
+        protected void filterByPrice() {
+
+            if ((down == true) || (down == false && up == false)) {
+                Comparator<String> priceComparator = new Comparator<String>() {
+                    @Override
+                    public int compare(String data1, String data2) {
+                        double price1 = Double.parseDouble(data1.split(",")[2].trim());
+                        double price2 = Double.parseDouble(data2.split(",")[2].trim());
+                        return Double.compare(price1, price2);
+                    }
+                };
+                up = true;
+                down = false;
+                upArrowPrice.setVisibility(View.VISIBLE);
+                downArrowPrice.setVisibility(View.INVISIBLE);
+                Collections.sort(caseInfoBase, priceComparator);
+                adapterList();
+            } else if(up == true){
+                Comparator<String> priceComparator = new Comparator<String>() {
+                    @Override
+                    public int compare(String data1, String data2) {
+                        double price1 = Double.parseDouble(data1.split(",")[2].trim());
+                        double price2 = Double.parseDouble(data2.split(",")[2].trim());
+                        return Double.compare(price2, price1);
+                    }
+                };
+                up = false;
+                down = true;
+                downArrowPrice.setVisibility(View.VISIBLE);
+                upArrowPrice.setVisibility(View.INVISIBLE);
+                Collections.sort(caseInfoBase, priceComparator);
+                adapterList();
+            }
+        }
+
+        protected void filterByCount(){
+
+        }
+
+        protected void filterByName(){
+
         }
 }
